@@ -83,7 +83,7 @@ const Pelanggan = () => {
   const [expandedKecamatan, setExpandedKecamatan] = useState({});
   const [expandedKelurahan, setExpandedKelurahan] = useState({});
 
-  const { isAuthenticated, logout } = useAuth();
+  const { isAuthenticated, logout, userData } = useAuth();
   const { submitToBackground } = useBackgroundJob();
   const { showSuccess, showError, showInfo } = useNotification();
 
@@ -128,7 +128,11 @@ const Pelanggan = () => {
     try {
       const response = await apiClient.get(`/pelanggan`);
       if (response.data.success && Array.isArray(response.data.data)) {
-        setPelangganList(response.data.data);
+        let data = response.data.data;
+        if (userData && userData.role === 'admin') {
+          data = data.filter(item => item.users_id === userData.users_id);
+        }
+        setPelangganList(data);
       } else {
         setPelangganList([]);
         setError(response.data?.message || 'Gagal mengambil data pelanggan dengan format respons yang tidak diharapkan.');
@@ -139,7 +143,7 @@ const Pelanggan = () => {
     } finally {
       setIsFetchingList(false);
     }
-  }, [isAuthenticated, handleApiError]);
+  }, [isAuthenticated, handleApiError, userData]);
 
   const fetchKelompokOptions = useCallback(async () => {
     setIsLoadingKelompok(true);

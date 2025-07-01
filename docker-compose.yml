@@ -1,0 +1,12 @@
+
+services:
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: pam_frontend_standalone
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+     restart: unless-stopped

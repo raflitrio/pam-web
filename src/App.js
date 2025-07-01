@@ -23,9 +23,9 @@ import InviteAdmin from './component/inviteAdmin';
 import AcceptInvitation from './component/AcceptInvitation';
 import pamTheme from './theme/pamTheme';
 
-const ProtectedRoute = ({ children }) => {
+const ProtectedRoute = ({ children, allowedRoles }) => {
   const location = useLocation();
-  const { isAuthenticated, isLoadingAuth } = useAuth();
+  const { isAuthenticated, isLoadingAuth, userData } = useAuth();
   if (isLoadingAuth) {
     return (
       <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
@@ -33,9 +33,12 @@ const ProtectedRoute = ({ children }) => {
       </Box>
     );
   }
-
   if (!isAuthenticated) {
     return <Navigate to="/login" state={{ from: location }} replace />;
+  }
+  if (allowedRoles && userData && !allowedRoles.includes(userData.role)) {
+    // Jika role tidak diizinkan, redirect ke /penggunaanair
+    return <Navigate to="/penggunaanair" replace />;
   }
   return children;
 };
@@ -65,7 +68,7 @@ const AppRoutes = () => {
 
           <Route
             element={
-              <ProtectedRoute>
+              <ProtectedRoute allowedRoles={['super_admin']}>
                 <LayoutWithSidebarAndTopbar />
               </ProtectedRoute>
             }

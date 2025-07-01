@@ -18,7 +18,7 @@ export let currentCsrfToken = null;
 // Fungsi untuk mengambil CSRF token dari backend
 export const fetchCsrfToken = async () => {
     try {
-        const { data } = await apiClient.get('/api/v1/csrf-token');
+        const { data } = await apiClient.get('/csrf-token');
         return data.csrfToken;
     } catch (error) {
         return null;
@@ -28,7 +28,7 @@ export const fetchCsrfToken = async () => {
 // Fungsi untuk refresh CSRF token
 const refreshCSRFToken = async () => {
     try {
-        const response = await apiClient.get('/api/v1/csrf-token');
+        const response = await apiClient.get('/csrf-token');
         const csrfToken = response.data.csrfToken;
         currentCsrfToken = csrfToken;
         apiClient.defaults.headers.common['X-CSRF-Token'] = csrfToken;
@@ -42,7 +42,7 @@ const refreshCSRFToken = async () => {
 // Fungsi untuk inisialisasi CSRF token saat aplikasi dimuat
 export const initializeCsrfToken = async () => {
     try {
-        const response = await apiClient.get('/api/v1/csrf-token');
+        const response = await apiClient.get('/csrf-token');
         const csrfToken = response.data.csrfToken;
         currentCsrfToken = csrfToken;
         apiClient.defaults.headers.common['X-CSRF-Token'] = csrfToken;
@@ -56,8 +56,8 @@ export const initializeCsrfToken = async () => {
 // Interceptor untuk request Axios
 apiClient.interceptors.request.use(
     async (config) => {
-         if (currentCsrfToken && !config.headers['CSRF-Token'] && ['POST', 'PUT', 'DELETE', 'PATCH'].includes(config.method.toUpperCase())) {
-            config.headers['CSRF-Token'] = currentCsrfToken;
+         if (currentCsrfToken && !config.headers['X-CSRF-Token'] && ['POST', 'PUT', 'DELETE', 'PATCH'].includes(config.method.toUpperCase())) {
+            config.headers['X-CSRF-Token'] = currentCsrfToken;
         }
         return config;
     },
@@ -87,8 +87,8 @@ apiClient.interceptors.response.use(
 
 userApiClient.interceptors.request.use(
     async (config) => {
-         if (currentCsrfToken && !config.headers['CSRF-Token'] && ['POST', 'PUT', 'DELETE', 'PATCH'].includes(config.method.toUpperCase())) {
-            config.headers['CSRF-Token'] = currentCsrfToken;
+         if (currentCsrfToken && !config.headers['X-CSRF-Token'] && ['POST', 'PUT', 'DELETE', 'PATCH'].includes(config.method.toUpperCase())) {
+            config.headers['X-CSRF-Token'] = currentCsrfToken;
         }
         return config;
     },

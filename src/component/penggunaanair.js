@@ -74,7 +74,12 @@ function PenggunaanAir() {
         }
         try {
             const response = await apiClient.get(`/penggunaanair`);
-            setDataPenggunaan(response.data.data || []);
+            let data = response.data.data || [];
+            // Jika admin, filter data berdasarkan petugas_pencatat = username
+            if (userData && userData.role === 'admin') {
+                data = data.filter(item => item.petugas_pencatat === userData.username);
+            }
+            setDataPenggunaan(data);
         } catch (err) {
             let errMsg = err.response?.data?.message || err.message || 'Gagal mengambil data penggunaan air';
             if (err.response?.status === 401 || err.response?.status === 403) {
@@ -85,7 +90,7 @@ function PenggunaanAir() {
         } finally {
             setIsLoading(false);
         }
-    }, [isAuthenticated]);
+    }, [isAuthenticated, userData]);
 
     const fetchMeteranPelanggan = useCallback(async () => {
         setIsMeteranLoading(true);

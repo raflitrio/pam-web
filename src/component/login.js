@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, Link as RouterLink } from 'react-router-dom';
 import { Button, TextField, Box, Container, Paper, Typography, Alert, CircularProgress } from '@mui/material';
 import { useAuth } from '../utils/AuthContext';
-import apiClient from '../utils/axiosConfig'; // Import apiClient
+import apiClient, { initializeCsrfToken } from '../utils/axiosConfig'; // Import apiClient dan initializeCsrfToken
 
 // const API_BASE_URL = process.env.REACT_APP_API_URL; // Tidak lagi diperlukan jika apiClient dikonfigurasi dengan baseURL
 
@@ -35,6 +35,8 @@ const Login = () => {
             }
         };
         checkAdmin();
+        // Inisialisasi CSRF token sebelum login
+        initializeCsrfToken();
         return () => {
             mounted.current = false;
         };

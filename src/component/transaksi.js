@@ -63,7 +63,7 @@ const DaftarRiwayatTagihan = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(10); // Jumlah item per halaman
 
-  const { isAuthenticated } = useAuth(); // Menggunakan isAuthenticated
+  const { isAuthenticated, userData } = useAuth(); // Menggunakan isAuthenticated
 
   const [exportAnchorEl, setExportAnchorEl] = useState(null);
   const handleExportClick = (event) => setExportAnchorEl(event.currentTarget);
@@ -90,7 +90,12 @@ const DaftarRiwayatTagihan = () => {
 
       const data = response.data;
       if (data.success && Array.isArray(data.data)) {
-        setRiwayatTagihanList(data.data);
+        let filtered = data.data;
+        if (userData && userData.role === 'admin') {
+          // Asumsi ada field petugas_pencatat atau users_id di data transaksi
+          filtered = filtered.filter(item => item.petugas_pencatat === userData.username || item.users_id === userData.users_id);
+        }
+        setRiwayatTagihanList(filtered);
       } else {
         setRiwayatTagihanList([]);
         setError(data.message || 'Gagal mengambil data riwayat tagihan.');
@@ -101,7 +106,7 @@ const DaftarRiwayatTagihan = () => {
     } finally {
       setLoading(false);
     }
-  }, [isAuthenticated]);
+  }, [isAuthenticated, userData]);
 
   useEffect(() => {
     if (isAuthenticated) { // Panggil fetch jika sudah terautentikasi

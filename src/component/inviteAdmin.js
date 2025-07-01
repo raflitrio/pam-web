@@ -9,11 +9,16 @@ import {
     Button,
     Alert,
     CircularProgress,
-    Grid
+    Grid,
+    FormControl,
+    InputLabel,
+    Select,
+    MenuItem
 } from '@mui/material';
 import { UserPlus as UserPlusIcon } from 'react-feather';
 import { useTheme } from '@mui/material/styles';
 import { sendAdminNotification } from '../utils/adminNotification';
+import { useAuth } from '../utils/AuthContext';
 
 const InviteAdmin = () => {
     const [username, setUsername] = useState('');
@@ -23,6 +28,8 @@ const InviteAdmin = () => {
     const [loading, setLoading] = useState(false);
     const mounted = useRef(true);
     const theme = useTheme();
+    const { userData } = useAuth();
+    const [role, setRole] = useState('admin');
 
     useEffect(() => {
         mounted.current = true;
@@ -38,21 +45,19 @@ const InviteAdmin = () => {
         if (!mounted.current) return;
         setLoading(true);
 
-        if (!username.trim() || !email.trim()) {
+        if (!username.trim() || !email.trim() || (userData && userData.role === 'super_admin' && !role)) {
             if (mounted.current) {
-                setError('Username dan Email wajib diisi.');
+                setError('Username, Email, dan Role wajib diisi.');
                 setLoading(false);
             }
             return;
         }
 
         try {
-            // Assuming apiClient.baseURL is configured to point to the base of admin routes
-            // e.g., http://localhost:PORT/api/v1/admin
-            // Then the path is just '/invite-new-admin'
             const response = await apiClient.post(`/invite-new-admin`, {
                 username: username.trim(),
                 email: email.trim(),
+                role: userData && userData.role === 'super_admin' ? role : 'admin',
             });
 
             if (response.data.success) {
@@ -60,6 +65,7 @@ const InviteAdmin = () => {
                     setSuccessMessage(response.data.message || 'Undangan admin berhasil dikirim. Admin baru perlu mengecek email mereka.');
                     setUsername('');
                     setEmail('');
+                    if (userData && userData.role === 'super_admin') setRole('admin');
                     await sendAdminNotification('Input Berhasil', 'Data pelanggan berhasil diinput');
                 }
             } else {
@@ -137,6 +143,24 @@ const InviteAdmin = () => {
                                 helperText="Email aktif untuk pengiriman link undangan."
                             />
                         </Grid>
+                        {userData && userData.role === 'super_admin' && (
+                          <Grid item xs={12}>
+                            <FormControl fullWidth required>
+                              <InputLabel id="role-label">Role</InputLabel>
+                              <Select
+                                labelId="role-label"
+                                id="role"
+                                value={role}
+                                label="Role"
+                                onChange={(e) => setRole(e.target.value)}
+                                disabled={loading}
+                              >
+                                <MenuItem value="admin">Admin</MenuItem>
+                                <MenuItem value="super_admin">Super Admin</MenuItem>
+                              </Select>
+                            </FormControl>
+                          </Grid>
+                        )}
                     </Grid>
                     <Button
                         type="submit"
